@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace BeatSaberNoUpdate {
@@ -59,7 +58,7 @@ namespace BeatSaberNoUpdate {
 			if(!Directory.Exists(path))
 				return false;
 
-			if(!File.Exists(Path.Join(path, "..", "..", "appmanifest_620980.acf")))
+			if(!File.Exists(Path.Combine(path, "..", "..", "appmanifest_620980.acf")))
 				return false;
 
 			return true;
@@ -90,7 +89,7 @@ namespace BeatSaberNoUpdate {
 				return;
 			}
 
-			var p = Path.Join(textbox_path.Text, "..", "..", "appmanifest_620980.acf");
+			var p = Path.Combine(textbox_path.Text, "..", "..", "appmanifest_620980.acf");
 
 			var acf = File.ReadAllText(p);
 
@@ -98,7 +97,7 @@ namespace BeatSaberNoUpdate {
 				Bad("Seems like this update is already applied. I'll apply it again for good measure");
 
 			SetKv(ref acf, "ScheduledAutoUpdate", "0");
-			SetKv(ref acf, "LastUpdated", ((uint)DateTimeOffset.UnixEpoch.ToUnixTimeSeconds()).ToString());
+			SetKv(ref acf, "LastUpdated", ((uint)DateTimeOffset.Now.ToUnixTimeSeconds()).ToString());
 			SetKv(ref acf, "StateFlags", "4");
 			SetKv(ref acf, "UpdateResult", "0");
 

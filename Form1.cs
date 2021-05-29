@@ -70,7 +70,7 @@ namespace BeatSaberNoUpdate {
 		}
 
 		void SetKv(ref string input, string key, string val) {
-			input = Regex.Replace(input, $"\"{key}\".*", $"\t\"{key}\"\t\"{val}\"", RegexOptions.IgnoreCase);
+			input = Regex.Replace(input, $"\"{key}\".*", $"\"{key}\"\t\"{val}\"", RegexOptions.IgnoreCase);
 		}
 
 		private void button2_Click(object sender, EventArgs e) {

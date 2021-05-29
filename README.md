@@ -2,7 +2,7 @@
 Simple tool to prevent Steam from Updating Beat Saber whenever there happens to be an update
 
 <p align="center">
-  ![Settings Screenshot](SS.png)
+  <img src="SS.png">
 </p>
 
 # How to use

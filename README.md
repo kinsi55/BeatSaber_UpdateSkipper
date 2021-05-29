@@ -1,5 +1,5 @@
 # BeatSaber UpdateSkipper
-Simple tool to prevent Steam from Updating Beat Saber whenever there happens to be an update
+Simple tool to prevent Steam from Updating Beat Saber whenever there happens to be an update so you dont need to copy around files and end up possibly wrecking your setup.
 
 <p align="center">
   <img src="SS.png">

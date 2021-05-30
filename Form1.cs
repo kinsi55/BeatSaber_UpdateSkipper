@@ -17,21 +17,13 @@ namespace BeatSaberNoUpdate {
 			InitializeComponent();
 		}
 
-		private void button1_Click(object sender, EventArgs e) {
+		private void browseButton_Click(object sender, EventArgs e) {
 			using(var dialog = new FolderBrowserDialog()) {
 				if(dialog.ShowDialog() != DialogResult.OK)
 					return;
 
 				textbox_path.Text = dialog.SelectedPath;
 			}
-		}
-
-		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-			MessageBox.Show("Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to make sure the site has already spotted the update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-			Process.Start(new ProcessStartInfo("https://steamdb.info/depot/620981/manifests") {
-				UseShellExecute = true,
-				Verb = "open"
-			});
 		}
 
 		private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
@@ -73,7 +65,7 @@ namespace BeatSaberNoUpdate {
 			input = Regex.Replace(input, $"\"{key}\".*", $"\"{key}\"\t\"{val}\"", RegexOptions.IgnoreCase);
 		}
 
-		private void button2_Click(object sender, EventArgs e) {
+		private void applyButton_Click(object sender, EventArgs e) {
 			if(!CheckFolderPath(textbox_path.Text)) {
 				Bad("It seems like the Folder you selected is incorrect. You can go to the properties of Beat Saber in Steam and click on 'Browse Game files' for an easy method to get the correct path");
 				return;
@@ -111,12 +103,33 @@ namespace BeatSaberNoUpdate {
 			MessageBox.Show("Patch applied. If everything worked correctly Steam should not require you to update Beat Saber any more the next time you start it", "Success");
 		}
 
-		private void button3_Click(object sender, EventArgs e) {
+		private void aboutButton_Click(object sender, EventArgs e) {
 			MessageBox.Show(
 				"This tool modifies a config file of Steam to make it think that you already have the last version (Indicated by the correct Manifest ID) eventho you are not.\n" +
 				"\n" +
 				"You will need to redo this whenever an Update is released (Basically whenever Steam prompts you to Update to start the game you use this tool instead to fake that you did update"
 			);
 		}
-	}
+
+        private void getManifestButton_Click(object sender, EventArgs e)
+        {
+			AppInfo appInfo = new AppInfo();
+			(bool, string) result = appInfo.Initialize();
+			// if successful fill in textbox
+			if (result.Item1)
+            {
+				textbox_manifest.Text = result.Item2;
+            } 
+			// otherwise display prompt and launch SteamDB
+			else
+            {
+				MessageBox.Show("Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to make sure the site has already spotted the update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				Process.Start(new ProcessStartInfo("https://steamdb.info/depot/620981/manifests")
+				{
+					UseShellExecute = true,
+					Verb = "open"
+				});
+			}
+        }
+    }
 }

@@ -2,16 +2,20 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net46</TargetFramework>
+    <TargetFramework>net461</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>bsskip.ico</ApplicationIcon>
     <Authors>Kinsi55</Authors>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SteamKit2" Version="2.3.0" />
+  </ItemGroup>
 
 </Project>

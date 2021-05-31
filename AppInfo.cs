@@ -1,13 +1,14 @@
 ﻿using SteamKit2;
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
+using System.Linq;
 
-namespace BeatSaberNoUpdate
-{
-    class AppInfo
-    {
+namespace BeatSaberNoUpdate {
+    class AppInfo {
         // Beat Saber's app id
-        const uint APPID = 620980;
+        public const uint APPID = 620980;
+        public const uint DEPOT_ID = 620981;
 
         private static SteamClient steamClient;
         private static SteamApps steamApps;
@@ -17,11 +18,11 @@ namespace BeatSaberNoUpdate
         private static bool isRunning;
 
         private static JobID infoRequest = JobID.Invalid;
-        private static string manifestId = "";
-        private static bool success = false;
+        private static string manifestId = null;
 
-        public (bool, string) Initialize()
-        {
+        public async Task<string> TryRetrieve() {
+            manifestId = null;
+
             // initialize a client and a callback manager for responding to events
             steamClient = new SteamClient();
             manager = new CallbackManager(steamClient);
@@ -35,41 +36,35 @@ namespace BeatSaberNoUpdate
             manager.Subscribe<SteamUser.LoggedOnCallback>(OnLoggedOn);
             manager.Subscribe<SteamUser.LoggedOffCallback>(OnLoggedOff);
 
-
             isRunning = true;
 
-            Debug.WriteLine("Connecting to Steam...");
+            await Task.Run(() => {
+                Debug.WriteLine("Connecting to Steam...");
 
-            steamClient.Connect();
+                steamClient.Connect();
 
-            while (isRunning)
-            {
-                manager.RunWaitCallbacks(TimeSpan.FromSeconds(1));
-            }
+                while(isRunning)
+                    manager.RunWaitCallbacks(TimeSpan.FromSeconds(1));
+            });
 
-            return (success, manifestId);
+            return manifestId;
         }
 
 
-        static void OnConnected(SteamClient.ConnectedCallback callback)
-        {
+        static void OnConnected(SteamClient.ConnectedCallback callback) {
             Debug.WriteLine("Successfully connected to Steam");
             // log on anonymously
             steamUser.LogOnAnonymous();
         }
 
-        static void OnDisconnected(SteamClient.DisconnectedCallback callback)
-        {
+        static void OnDisconnected(SteamClient.DisconnectedCallback callback) {
             Debug.WriteLine("Disconnected from Steam");
             isRunning = false;
         }
 
-        static void OnLoggedOn(SteamUser.LoggedOnCallback callback)
-        {
-            if (callback.Result != EResult.OK)
-            {
-                if (callback.Result == EResult.AccountLogonDenied)
-                {
+        static void OnLoggedOn(SteamUser.LoggedOnCallback callback) {
+            if(callback.Result != EResult.OK) {
+                if(callback.Result == EResult.AccountLogonDenied) {
                     // this shouldn't happen when logging in anonymously
                     Debug.WriteLine("Unable to login to Steam");
                     isRunning = false;
@@ -83,30 +78,31 @@ namespace BeatSaberNoUpdate
 
             Debug.WriteLine("Successfully logged in to Steam");
 
-
             // request product info
             infoRequest = steamApps.PICSGetProductInfo(APPID, null);
         }
 
-        private void OnProductInfo(SteamApps.PICSProductInfoCallback callback)
-        {
+        private void OnProductInfo(SteamApps.PICSProductInfoCallback callback) {
             Debug.WriteLine("In OnProductInfo callback");
-            if (callback.JobID != infoRequest)
-            {
+            if(callback.JobID != infoRequest)
                 return;
-            }
 
             // not sure if this is game specific or applies to other games
-            manifestId = callback.Apps[APPID].KeyValues.Children[4].Children[1].Children[1].Children[0].Value;
+            var manifest = callback?.Apps[APPID]?.KeyValues.Children
+                .FirstOrDefault(x => x.Name == "depots")?.Children
+                .FirstOrDefault(x => x.Name == DEPOT_ID.ToString())?.Children
+                .FirstOrDefault(x => x.Name == "manifests")?.Children
+                .FirstOrDefault(x => x.Name == "public")?.Value;
 
-            if (manifestId.Length == 19) success = true;
+            if(manifest?.Length == 19)
+                manifestId = manifest;
+
             Debug.WriteLine(manifestId);
             // log off after getting the manifest
             steamUser.LogOff();
         }
 
-        static void OnLoggedOff(SteamUser.LoggedOffCallback callback)
-        {
+        static void OnLoggedOff(SteamUser.LoggedOffCallback callback) {
             Debug.WriteLine("Logged off Steam: {0}", callback.Result);
             isRunning = false;
         }

@@ -17,6 +17,13 @@ namespace BeatSaberNoUpdate {
 			InitializeComponent();
 		}
 
+		void LaunchUrl(string url) {
+			Process.Start(new ProcessStartInfo(url) {
+				UseShellExecute = true,
+				Verb = "open"
+			});
+		}
+
 		private void browseButton_Click(object sender, EventArgs e) {
 			using(var dialog = new FolderBrowserDialog()) {
 				if(dialog.ShowDialog() != DialogResult.OK)
@@ -27,10 +34,7 @@ namespace BeatSaberNoUpdate {
 		}
 
 		private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-			Process.Start(new ProcessStartInfo("https://github.com/kinsi55?tab=repositories&q=BeatSaber") {
-				UseShellExecute = true,
-				Verb = "open"
-			});
+			LaunchUrl("https://github.com/kinsi55?tab=repositories&q=BeatSaber");
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
@@ -58,7 +62,6 @@ namespace BeatSaberNoUpdate {
 
 		void Bad(string str) {
 			MessageBox.Show(str, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
 		}
 
 		void SetKv(ref string input, string key, string val) {
@@ -76,7 +79,7 @@ namespace BeatSaberNoUpdate {
 				return;
 			}
 
-			if(Process.GetProcesses().Any(x => x.ProcessName.ToLower().StartsWith("steam"))) {
+			if(Process.GetProcesses().Any(x => x.ProcessName.ToLower() == "steam")) {
 				Bad("Steam seems to be running, please exit it to apply the patch");
 				return;
 			}
@@ -96,11 +99,11 @@ namespace BeatSaberNoUpdate {
 			if(checkBox1.Checked)
 				SetKv(ref acf, "AutoUpdateBehavior", "1");
 
-			acf = Regex.Replace(acf, "(\"620981\".*?\"manifest\"\\s*?)\"[0-9]{19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+			acf = Regex.Replace(acf, "(\"" + AppInfo.DEPOT_ID + "\".*?\"manifest\"\\s*?)\"[0-9]{19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
 			File.WriteAllText(p, acf);
 
-			MessageBox.Show("Patch applied. If everything worked correctly Steam should not require you to update Beat Saber any more the next time you start it", "Success");
+			MessageBox.Show("Patch applied. If everything worked correctly Steam should most likely not ask you to update Beat Saber any more. If it still does its probably related to DLC(Assmung you have any) and should not update the game, just to be sure I advise you to backup your game version", "Success");
 		}
 
 		private void aboutButton_Click(object sender, EventArgs e) {
@@ -111,25 +114,22 @@ namespace BeatSaberNoUpdate {
 			);
 		}
 
-        private void getManifestButton_Click(object sender, EventArgs e)
-        {
+        private async void getManifestButton_Click(object sender, EventArgs e) {
+			getManifestButton.Enabled = false;
+			getManifestButton.Text = "Loading...";
+
 			AppInfo appInfo = new AppInfo();
-			(bool, string) result = appInfo.Initialize();
+			string manifest = await appInfo.TryRetrieve();
 			// if successful fill in textbox
-			if (result.Item1)
-            {
-				textbox_manifest.Text = result.Item2;
-            } 
-			// otherwise display prompt and launch SteamDB
-			else
-            {
-				MessageBox.Show("Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to make sure the site has already spotted the update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-				Process.Start(new ProcessStartInfo("https://steamdb.info/depot/620981/manifests")
-				{
-					UseShellExecute = true,
-					Verb = "open"
-				});
+			if(manifest != null) {
+				textbox_manifest.Text = manifest;
+            } else {
+				MessageBox.Show("Automatically retreiving the Manifest ID failed. Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to confirm the site has already spotted the latest update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				LaunchUrl($"https://steamdb.info/depot/{AppInfo.DEPOT_ID}/manifests");
 			}
-        }
+
+			getManifestButton.Enabled = true;
+			getManifestButton.Text = "Retrieve";
+		}
     }
 }

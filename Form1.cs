@@ -17,7 +17,14 @@ namespace BeatSaberNoUpdate {
 			InitializeComponent();
 		}
 
-		private void button1_Click(object sender, EventArgs e) {
+		void LaunchUrl(string url) {
+			Process.Start(new ProcessStartInfo(url) {
+				UseShellExecute = true,
+				Verb = "open"
+			});
+		}
+
+		private void browseButton_Click(object sender, EventArgs e) {
 			using(var dialog = new FolderBrowserDialog()) {
 				if(dialog.ShowDialog() != DialogResult.OK)
 					return;
@@ -26,19 +33,8 @@ namespace BeatSaberNoUpdate {
 			}
 		}
 
-		private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-			MessageBox.Show("Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to make sure the site has already spotted the update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
-			Process.Start(new ProcessStartInfo("https://steamdb.info/depot/620981/manifests") {
-				UseShellExecute = true,
-				Verb = "open"
-			});
-		}
-
 		private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-			Process.Start(new ProcessStartInfo("https://github.com/kinsi55?tab=repositories&q=BeatSaber") {
-				UseShellExecute = true,
-				Verb = "open"
-			});
+			LaunchUrl("https://github.com/kinsi55?tab=repositories&q=BeatSaber");
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
@@ -66,14 +62,13 @@ namespace BeatSaberNoUpdate {
 
 		void Bad(string str) {
 			MessageBox.Show(str, "Error", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
 		}
 
 		void SetKv(ref string input, string key, string val) {
 			input = Regex.Replace(input, $"\"{key}\".*", $"\"{key}\"\t\"{val}\"", RegexOptions.IgnoreCase);
 		}
 
-		private void button2_Click(object sender, EventArgs e) {
+		private void applyButton_Click(object sender, EventArgs e) {
 			if(!CheckFolderPath(textbox_path.Text)) {
 				Bad("It seems like the Folder you selected is incorrect. You can go to the properties of Beat Saber in Steam and click on 'Browse Game files' for an easy method to get the correct path");
 				return;
@@ -84,7 +79,7 @@ namespace BeatSaberNoUpdate {
 				return;
 			}
 
-			if(Process.GetProcesses().Any(x => x.ProcessName.ToLower().StartsWith("steam"))) {
+			if(Process.GetProcesses().Any(x => x.ProcessName.ToLower() == "steam")) {
 				Bad("Steam seems to be running, please exit it to apply the patch");
 				return;
 			}
@@ -104,19 +99,37 @@ namespace BeatSaberNoUpdate {
 			if(checkBox1.Checked)
 				SetKv(ref acf, "AutoUpdateBehavior", "1");
 
-			acf = Regex.Replace(acf, "(\"620981\".*?\"manifest\"\\s*?)\"[0-9]{19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+			acf = Regex.Replace(acf, "(\"" + AppInfo.DEPOT_ID + "\".*?\"manifest\"\\s*?)\"[0-9]{19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
 			File.WriteAllText(p, acf);
 
-			MessageBox.Show("Patch applied. If everything worked correctly Steam should not require you to update Beat Saber any more the next time you start it", "Success");
+			MessageBox.Show("Patch applied. If everything worked correctly Steam should most likely not ask you to update Beat Saber any more. If it still does its probably related to DLC(Assmung you have any) and should not update the game, just to be sure I advise you to backup your game version", "Success");
 		}
 
-		private void button3_Click(object sender, EventArgs e) {
+		private void aboutButton_Click(object sender, EventArgs e) {
 			MessageBox.Show(
 				"This tool modifies a config file of Steam to make it think that you already have the last version (Indicated by the correct Manifest ID) eventho you are not.\n" +
 				"\n" +
 				"You will need to redo this whenever an Update is released (Basically whenever Steam prompts you to Update to start the game you use this tool instead to fake that you did update"
 			);
 		}
-	}
+
+        private async void getManifestButton_Click(object sender, EventArgs e) {
+			getManifestButton.Enabled = false;
+			getManifestButton.Text = "Loading...";
+
+			AppInfo appInfo = new AppInfo();
+			string manifest = await appInfo.TryRetrieve();
+			// if successful fill in textbox
+			if(manifest != null) {
+				textbox_manifest.Text = manifest;
+            } else {
+				MessageBox.Show("Automatically retreiving the Manifest ID failed. Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to confirm the site has already spotted the latest update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				LaunchUrl($"https://steamdb.info/depot/{AppInfo.DEPOT_ID}/manifests");
+			}
+
+			getManifestButton.Enabled = true;
+			getManifestButton.Text = "Retrieve";
+		}
+    }
 }

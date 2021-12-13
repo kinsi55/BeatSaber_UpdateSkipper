@@ -96,8 +96,9 @@ namespace BeatSaberNoUpdate {
 			SetKv(ref acf, "StateFlags", "4");
 			SetKv(ref acf, "UpdateResult", "0");
 
+			// Disable Autoupdate if its not already
 			if(checkBox1.Checked)
-				SetKv(ref acf, "AutoUpdateBehavior", "1");
+				SetKv(ref acf, "AutoUpdateBehavior", "0");
 
 			acf = Regex.Replace(acf, "(\"" + AppInfo.DEPOT_ID + "\".*?\"manifest\"\\s*?)\"[0-9]{19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 

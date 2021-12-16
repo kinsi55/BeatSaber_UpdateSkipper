@@ -34,7 +34,7 @@ namespace BeatSaberNoUpdate {
 		}
 
 		private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e) {
-			LaunchUrl("https://github.com/kinsi55?tab=repositories&q=BeatSaber");
+			LaunchUrl("https://kinsi.me/bsmods.html");
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
@@ -104,7 +104,7 @@ namespace BeatSaberNoUpdate {
 
 			File.WriteAllText(p, acf);
 
-			MessageBox.Show("Patch applied. If everything worked correctly Steam should most likely not ask you to update Beat Saber any more. If it still does its probably related to DLC(Assmung you have any) and should not update the game, just to be sure I advise you to backup your game version", "Success");
+			MessageBox.Show("Patch applied. Steam might still claim that an update available, but it should not actually download anything.\n\nIn doubt, create a backup.\n\nTo actually update your game at a later point, go to the properties of the game in Steam and verify the game integrity.\n**Just simply installing an update at a later point without verifying the game integrity will probably break your game**", "Success");
 		}
 
 		private void aboutButton_Click(object sender, EventArgs e) {

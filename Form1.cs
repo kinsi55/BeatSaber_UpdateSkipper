@@ -96,8 +96,11 @@ namespace BeatSaberNoUpdate {
 			SetKv(ref acf, "StateFlags", "4");
 			SetKv(ref acf, "UpdateResult", "0");
 
+			// Enable launchButton after applying Manifest Update
+			launchButton.Enabled = true;
+
 			// Disable Autoupdate if its not already
-			if(checkBox1.Checked)
+			if (checkBox1.Checked)
 				SetKv(ref acf, "AutoUpdateBehavior", "0");
 
 			acf = Regex.Replace(acf, "(\"" + AppInfo.DEPOT_ID + "\".*?\"manifest\"\\s*?)\"[0-9]{19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
@@ -131,6 +134,11 @@ namespace BeatSaberNoUpdate {
 
 			getManifestButton.Enabled = true;
 			getManifestButton.Text = "Retrieve";
+		}
+
+		private void launchButton_Click(object sender, EventArgs e) {
+			LaunchUrl("steam://rungameid/620980");
+			this.Close();
 		}
     }
 }

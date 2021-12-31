@@ -11,7 +11,7 @@ namespace BeatSaberNoUpdate {
 		/// </summary>
 		[STAThread]
 		static void Main() {
-			Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
+            Debug.Listeners.Add(new TextWriterTraceListener(Console.Out));
 			Debug.AutoFlush = true;
 			Debug.Indent();
 			Debug.WriteLine("Entering Main, starting Form");

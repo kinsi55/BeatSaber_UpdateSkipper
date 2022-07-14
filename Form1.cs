@@ -74,7 +74,7 @@ namespace BeatSaberNoUpdate {
 				return;
 			}
 
-			if(!Regex.IsMatch(textbox_manifest.Text, "[0-9]{19}")) {
+			if(!Regex.IsMatch(textbox_manifest.Text, "[0-9]{16,19}")) {
 				Bad("The Manifest ID you entered is incorrect. It should be a 19 digit number. Make sure to not accidently enter any spaces");
 				return;
 			}

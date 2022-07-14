@@ -94,7 +94,7 @@ namespace BeatSaberNoUpdate {
                 .FirstOrDefault(x => x.Name == "manifests")?.Children
                 .FirstOrDefault(x => x.Name == "public")?.Value;
 
-            if(manifest?.Length == 19)
+            if(manifest?.Length >= 16)
                 manifestId = manifest;
 
             Debug.WriteLine(manifestId);

@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SteamKit2;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,16 +39,77 @@ namespace BeatSaberNoUpdate {
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
-			try {
-				var p = Registry.GetValue(
-					@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 620980",
-					"InstallLocation", 
-					null
-				);
+            var steamPath = FindSteamFolder();
+            if (steamPath == null) {
+                return;
+            }
 
-				if(p != null && CheckFolderPath((string)p))
-					textbox_path.Text = (string)p;
-			} catch { }
+			var p = GetAppPath(steamPath, AppInfo.APPID);
+            if (p != null && CheckFolderPath((string)p))
+                textbox_path.Text = (string)p;
+		}
+
+		private string GetAppPath(string steamPath, uint appId)
+		{
+			var filePath = Path.Combine(steamPath, "config/libraryfolders.vdf");
+
+			if (!File.Exists(filePath))
+			{
+				return null;
+			}
+
+			try
+			{
+                var contents = File.ReadAllText(filePath);
+                var vdf = KeyValue.LoadFromString(contents);
+
+                foreach (var library in vdf.Children)
+                {
+					var lib = new Dictionary<string, KeyValue>();
+					foreach (var sec in library.Children)
+					{
+						lib.Add(sec.Name, sec);
+					}
+
+					KeyValue apps;
+					lib.TryGetValue("apps", out apps);
+
+					KeyValue path;
+					lib.TryGetValue("path", out path);
+
+                    foreach (var app in apps.Children)
+                    {
+                        if (app.Name != appId.ToString()) continue;
+
+						var fullPath = Path.Combine(path.Value, "steamapps", "common", "Beat Saber");
+						if (CheckFolderPath(fullPath))
+						{
+							return fullPath;
+						}
+                    }
+                }
+            }
+			catch { }
+
+			return null;
+		}
+
+		private string FindSteamFolder()
+		{
+			string[] registryPaths = {
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam",
+				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Valve\\Steam"
+			};
+
+			foreach (var registryPath in registryPaths)
+			{
+				var path = Registry.GetValue(registryPath, "InstallPath", null) as string;
+				if (path != null && Directory.Exists(path)) {
+					return (string)path;
+				}
+			}
+
+			return null;
 		}
 
 		bool CheckFolderPath(string path) {

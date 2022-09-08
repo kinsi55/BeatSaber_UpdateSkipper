@@ -39,14 +39,14 @@ namespace BeatSaberNoUpdate {
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
-            var steamPath = FindSteamFolder();
-            if (steamPath == null) {
-                return;
-            }
+			var steamPath = FindSteamFolder();
+			if (steamPath == null) {
+				return;
+			}
 
 			var p = GetAppPath(steamPath, AppInfo.APPID);
-            if (p != null && CheckFolderPath((string)p))
-                textbox_path.Text = (string)p;
+			if (p != null && CheckFolderPath((string)p))
+				textbox_path.Text = (string)p;
 		}
 
 		private string GetAppPath(string steamPath, uint appId)
@@ -60,11 +60,11 @@ namespace BeatSaberNoUpdate {
 
 			try
 			{
-                var contents = File.ReadAllText(filePath);
-                var vdf = KeyValue.LoadFromString(contents);
+				var contents = File.ReadAllText(filePath);
+				var vdf = KeyValue.LoadFromString(contents);
 
-                foreach (var library in vdf.Children)
-                {
+				foreach (var library in vdf.Children)
+				{
 					var lib = new Dictionary<string, KeyValue>();
 					foreach (var sec in library.Children)
 					{
@@ -77,18 +77,18 @@ namespace BeatSaberNoUpdate {
 					KeyValue path;
 					lib.TryGetValue("path", out path);
 
-                    foreach (var app in apps.Children)
-                    {
-                        if (app.Name != appId.ToString()) continue;
+					foreach (var app in apps.Children)
+					{
+						if (app.Name != appId.ToString()) continue;
 
 						var fullPath = Path.Combine(path.Value, "steamapps", "common", "Beat Saber");
 						if (CheckFolderPath(fullPath))
 						{
 							return fullPath;
 						}
-                    }
-                }
-            }
+					}
+				}
+			}
 			catch { }
 
 			return null;
@@ -177,7 +177,7 @@ namespace BeatSaberNoUpdate {
 			);
 		}
 
-        private async void getManifestButton_Click(object sender, EventArgs e) {
+		private async void getManifestButton_Click(object sender, EventArgs e) {
 			getManifestButton.Enabled = false;
 			getManifestButton.Text = "Loading...";
 
@@ -186,7 +186,7 @@ namespace BeatSaberNoUpdate {
 			// if successful fill in textbox
 			if(manifest != null) {
 				textbox_manifest.Text = manifest;
-            } else {
+			} else {
 				MessageBox.Show("Automatically retreiving the Manifest ID failed. Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to confirm the site has already spotted the latest update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				LaunchUrl($"https://steamdb.info/depot/{AppInfo.DEPOT_ID}/manifests");
 			}
@@ -194,5 +194,5 @@ namespace BeatSaberNoUpdate {
 			getManifestButton.Enabled = true;
 			getManifestButton.Text = "Retrieve";
 		}
-    }
+	}
 }

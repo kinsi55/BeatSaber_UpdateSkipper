@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using SteamKit2;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -38,16 +39,61 @@ namespace BeatSaberNoUpdate {
 		}
 
 		private void Form1_Load(object sender, EventArgs e) {
-			try {
-				var p = Registry.GetValue(
-					@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Steam App 620980",
-					"InstallLocation", 
-					null
-				);
+			var steamPath = FindSteamFolder();
+			if (steamPath == null) {
+				return;
+			}
 
-				if(p != null && CheckFolderPath((string)p))
-					textbox_path.Text = (string)p;
+			var p = GetAppPath(steamPath, AppInfo.APPID);
+			if (p != null && CheckFolderPath((string)p))
+				textbox_path.Text = (string)p;
+		}
+
+		private string GetAppPath(string steamPath, uint appId)
+		{
+			var filePath = Path.Combine(steamPath, "config", "libraryfolders.vdf");
+
+			if(!File.Exists(filePath))
+				return null;
+
+			try {
+				var vdf = KeyValue.LoadAsText(filePath);
+				var tAppId = appId.ToString();
+
+				foreach(var library in vdf.Children) {
+					var libPath = library.Children.FirstOrDefault(x => x.Name == "path").Value;
+
+					if(libPath == null || !Directory.Exists(libPath))
+						continue;
+
+					if(library.Children.FirstOrDefault(x => x.Name == "apps")?.Children.Exists(x => x.Name == tAppId) != true)
+						continue;
+
+					var fullPath = Path.Combine(libPath, "steamapps", "common", "Beat Saber");
+
+					if(CheckFolderPath(fullPath))
+						return fullPath;
+				}
 			} catch { }
+
+			return null;
+		}
+
+		private string FindSteamFolder() {
+			var registryPaths = new []{
+				@"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam",
+				@"HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam"
+			};
+
+			foreach(var registryPath in registryPaths) {
+				try {
+					var path = Registry.GetValue(registryPath, "InstallPath", null) as string;
+					if(path != null && Directory.Exists(path))
+						return path;
+				} catch { }
+			}
+
+			return null;
 		}
 
 		bool CheckFolderPath(string path) {
@@ -115,7 +161,7 @@ namespace BeatSaberNoUpdate {
 			);
 		}
 
-        private async void getManifestButton_Click(object sender, EventArgs e) {
+		private async void getManifestButton_Click(object sender, EventArgs e) {
 			getManifestButton.Enabled = false;
 			getManifestButton.Text = "Loading...";
 
@@ -124,7 +170,7 @@ namespace BeatSaberNoUpdate {
 			// if successful fill in textbox
 			if(manifest != null) {
 				textbox_manifest.Text = manifest;
-            } else {
+			} else {
 				MessageBox.Show("Automatically retreiving the Manifest ID failed. Copy the latest 'Manifest ID' from the site. Make sure that 'Last update' looks correct, to confirm the site has already spotted the latest update!", "Info", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				LaunchUrl($"https://steamdb.info/depot/{AppInfo.DEPOT_ID}/manifests");
 			}
@@ -132,5 +178,5 @@ namespace BeatSaberNoUpdate {
 			getManifestButton.Enabled = true;
 			getManifestButton.Text = "Retrieve";
 		}
-    }
+	}
 }

@@ -51,62 +51,46 @@ namespace BeatSaberNoUpdate {
 
 		private string GetAppPath(string steamPath, uint appId)
 		{
-			var filePath = Path.Combine(steamPath, "config/libraryfolders.vdf");
+			var filePath = Path.Combine(steamPath, "config", "libraryfolders.vdf");
 
-			if (!File.Exists(filePath))
-			{
+			if(!File.Exists(filePath))
 				return null;
-			}
 
-			try
-			{
-				var contents = File.ReadAllText(filePath);
-				var vdf = KeyValue.LoadFromString(contents);
+			try {
+				var vdf = KeyValue.LoadAsText(filePath);
+				var tAppId = appId.ToString();
 
-				foreach (var library in vdf.Children)
-				{
-					var lib = new Dictionary<string, KeyValue>();
-					foreach (var sec in library.Children)
-					{
-						lib.Add(sec.Name, sec);
-					}
+				foreach(var library in vdf.Children) {
+					var libPath = library.Children.FirstOrDefault(x => x.Name == "path").Value;
 
-					KeyValue apps;
-					lib.TryGetValue("apps", out apps);
+					if(libPath == null || !Directory.Exists(libPath))
+						continue;
 
-					KeyValue path;
-					lib.TryGetValue("path", out path);
+					if(library.Children.FirstOrDefault(x => x.Name == "apps")?.Children.Exists(x => x.Name == tAppId) != true)
+						continue;
 
-					foreach (var app in apps.Children)
-					{
-						if (app.Name != appId.ToString()) continue;
+					var fullPath = Path.Combine(libPath, "steamapps", "common", "Beat Saber");
 
-						var fullPath = Path.Combine(path.Value, "steamapps", "common", "Beat Saber");
-						if (CheckFolderPath(fullPath))
-						{
-							return fullPath;
-						}
-					}
+					if(CheckFolderPath(fullPath))
+						return fullPath;
 				}
-			}
-			catch { }
+			} catch { }
 
 			return null;
 		}
 
-		private string FindSteamFolder()
-		{
-			string[] registryPaths = {
-				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Valve\\Steam",
-				"HKEY_LOCAL_MACHINE\\SOFTWARE\\Valve\\Steam"
+		private string FindSteamFolder() {
+			var registryPaths = new []{
+				@"HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Valve\Steam",
+				@"HKEY_LOCAL_MACHINE\SOFTWARE\Valve\Steam"
 			};
 
-			foreach (var registryPath in registryPaths)
-			{
-				var path = Registry.GetValue(registryPath, "InstallPath", null) as string;
-				if (path != null && Directory.Exists(path)) {
-					return (string)path;
-				}
+			foreach(var registryPath in registryPaths) {
+				try {
+					var path = Registry.GetValue(registryPath, "InstallPath", null) as string;
+					if(path != null && Directory.Exists(path))
+						return path;
+				} catch { }
 			}
 
 			return null;

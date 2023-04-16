@@ -118,11 +118,7 @@ namespace BeatSaberNoUpdate {
 			if(!CheckFolderPath(textbox_path.Text)) {
 				Bad("It seems like the Folder you selected is incorrect. You can go to the properties of Beat Saber in Steam and click on 'Browse Game files' for an easy method to get the correct path");
 				return;
-			}
 
-			if(!Regex.IsMatch(textbox_manifest.Text, "[0-9]{16,19}")) {
-				Bad("The Manifest ID you entered is incorrect. It should be a 19 digit number. Make sure to not accidently enter any spaces");
-				return;
 			}
 
 			if(Process.GetProcesses().Any(x => x.ProcessName.ToLower() == "steam")) {

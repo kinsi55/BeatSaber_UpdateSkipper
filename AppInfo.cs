@@ -88,11 +88,15 @@ namespace BeatSaberNoUpdate {
                 return;
 
             // not sure if this is game specific or applies to other games
-            var manifest = callback?.Apps[APPID]?.KeyValues.Children
+            var _manifest = callback?.Apps[APPID]?.KeyValues.Children
                 .FirstOrDefault(x => x.Name == "depots")?.Children
                 .FirstOrDefault(x => x.Name == DEPOT_ID.ToString())?.Children
                 .FirstOrDefault(x => x.Name == "manifests")?.Children
-                .FirstOrDefault(x => x.Name == "public")?.Value;
+                .FirstOrDefault(x => x.Name == "public");
+
+            var manifest = _manifest?.Value != null ? 
+                _manifest?.Value : 
+                _manifest.Children.FirstOrDefault(x => x.Name == "gid")?.Value;
 
             if(manifest?.Length >= 16)
                 manifestId = manifest;

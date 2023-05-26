@@ -121,14 +121,16 @@ namespace BeatSaberNoUpdate {
 			}
 
 			if(!Regex.IsMatch(textbox_manifest.Text, "[0-9]{16,19}")) {
-				Bad("The Manifest ID you entered is incorrect. It should be a 19 digit number. Make sure to not accidently enter any spaces");
+				Bad("The Manifest ID you entered is incorrect. It should be a 16-19 digit number. Make sure to not accidently enter any spaces");
 				return;
 			}
 
+#if !DEBUG
 			if(Process.GetProcesses().Any(x => x.ProcessName.ToLower() == "steam")) {
 				Bad("Steam seems to be running, please exit it to apply the patch");
 				return;
 			}
+#endif
 
 			var p = Path.Combine(textbox_path.Text, "..", "..", "appmanifest_620980.acf");
 
@@ -146,7 +148,7 @@ namespace BeatSaberNoUpdate {
 			if(checkBox1.Checked)
 				SetKv(ref acf, "AutoUpdateBehavior", "1");
 
-			acf = Regex.Replace(acf, "(\"" + AppInfo.DEPOT_ID + "\".*?\"manifest\"\\s*?)\"[0-9]{16,19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+			acf = Regex.Replace(acf, "(\"InstalledDepots\".*?\"" + AppInfo.DEPOT_ID + "\".*?\"manifest\"\\s*?)\"[0-9]{16,19}\"", $"$1\"{textbox_manifest.Text}\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
 
 			File.WriteAllText(p, acf);
 

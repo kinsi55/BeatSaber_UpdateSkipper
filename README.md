@@ -1,7 +1,7 @@
 # BeatSaber UpdateSkipper
 Simple tool to prevent Steam from Updating Beat Saber whenever there happens to be an update so you dont need to copy around files and end up possibly wrecking your setup.
 
-ℹ Nowadays, you should probably just use [BSManager](https://github.com/Zagrios/bs-manager) instead of this - I am not involved in its development but its probably the better option.
+ℹ️ Nowadays, you should probably just use [BSManager](https://github.com/Zagrios/bs-manager) instead of this - I am not involved in its development but its probably the better option.
 
 <p align="center">
   <img src="SS.png">
